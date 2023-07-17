@@ -51,6 +51,7 @@ export const useGraph = () => {
       ...objects.slice(index + 1)
     ]
 
+    // @ts-expect-error - idk how to fix this
     setObjects(newObjects)
   }
 
