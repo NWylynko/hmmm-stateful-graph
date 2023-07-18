@@ -1,14 +1,18 @@
-import type { objects as objectsData } from './objects';
+import { atom } from 'jotai';
+import { objects as objectsAtom } from './objects';
+import type { ExtractAtomValue } from 'jotai'
 
-type OriginalObject = typeof objectsData[number];
+type OriginalObject = ExtractAtomValue<typeof objectsAtom>[number];
 type ObjectWithChildrenIds = OriginalObject & { childrenIds: string[] };
 type GraphObject = ObjectWithChildrenIds & { children: GraphObject[] };
 
-export const graph = (objects: OriginalObject[]): GraphObject => {
+export const graphAtom = atom((get) => {
+  const objects = get(objectsAtom);
+
   const objectsWithChildrenIds: ObjectWithChildrenIds[] = objects.map((object) => ({
     ...object,
     childrenIds: objects
-      .filter((child) => child.parentId === object.id)
+      .filter((child) => child.parentId ? get(child.parentId) === object.id : false)
       .map((child) => child.id)
   }));
 
@@ -40,4 +44,4 @@ export const graph = (objects: OriginalObject[]): GraphObject => {
   }
 
   return buildGraph(rootObjects[0]);
-};
+});

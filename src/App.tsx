@@ -1,13 +1,15 @@
 import { useState } from "react"
 import { useGraph, GraphItem } from "./state"
+import { useAtomValue, useSetAtom } from "jotai"
 
 function App() {
-
-  const { state, updateData } = useGraph()
+  const graph = useGraph()
 
   return (
     <>
-      <GraphItem item={state} updateItem={updateData} />
+      <GraphItem 
+        item={graph} 
+      />
     </>
   )
 }
@@ -16,34 +18,37 @@ export default App
 
 type GraphItemProps = {
   item: GraphItem;
-  updateItem: ReturnType<typeof useGraph>["updateData"]
 }
 
 function GraphItem(props: GraphItemProps) {
 
-  const [name, setName] = useState(props.item.data.name)
+  const details = useAtomValue(props.item.data)
+  const [input, setInput] = useState(details.name)
+  const setName = useSetAtom(props.item.data)
 
   const handleUpdate = () => {
-    props.updateItem(
-      props.item.id,
-      props.item.type,
-      {
-        name: name
-      }
-    )
+    setName({
+      ...details,
+      name: input,
+    })
   }
-
-  const { ...details } = props.item.data
 
   return (
     <div className="m-1 p-1">
       <span className="flex gap-2">
         {">"}
-        <input value={name} onChange={(e) => setName(e.target.value)} onBlur={handleUpdate} />
+        <input 
+          value={input} 
+          onChange={(e) => setInput(e.target.value)} 
+          onBlur={handleUpdate} 
+        />
         <pre className="text-sm">{JSON.stringify(details)}</pre>
       </span>
       <div>
-        {props.item.children.map((item) => <GraphItem key={item.id} item={item} updateItem={props.updateItem} />)}
+        {props.item.children.map((item) => <GraphItem 
+          key={item.id} 
+          item={item} 
+        />)}
       </div>
     </div>
   )
